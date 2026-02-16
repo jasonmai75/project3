@@ -85,8 +85,11 @@ struct CXMLBusSystem::SImplementation{
             return DStopIDs.size();
         }
 
-        // Returns stop ID at given index
+        // Returns stop ID at given index or InvalidNodeID if out of range
         TStopID GetStopID(std::size_t index) const noexcept override {
+            if(index >= DStopIDs.size()) {
+                return InvalidStopID;
+            }
             return DStopIDs[index];
         }
     };
@@ -115,8 +118,11 @@ struct CXMLBusSystem::SImplementation{
             return DNodeIDs.size();
         }
 
-        // Returns node ID at given index
+        // Returns node ID at given index or InvalidNodeID if out of range
         CStreetMap::TNodeID GetNodeID(std::size_t index) const noexcept override {
+            if(index >= DNodeIDs.size()) {
+                return CStreetMap::InvalidNodeID;
+            }
             return DNodeIDs[index];
         }
 
