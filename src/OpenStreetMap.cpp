@@ -14,13 +14,15 @@ struct COpenStreetMap::SImplementation{
         TNodeID DID;
         SLocation DLocation;
 
+        TAttributes DAttributes;
+
         SNode(const SXMLEntity &entity){
             auto NodeID = std::stoull(entity.AttributeValue(DNodeIDAttr));
             auto NodeLat = std::stod(entity.AttributeValue(DNodeLatAttr));
             auto NodeLon = std::stod(entity.AttributeValue(DNodeLonAttr));
             DID = NodeID;
             DLocation = SLocation{NodeLat,NodeLon};
-            
+            DAttributes = entity.DAttributes;
         }
         ~SNode(){
 
@@ -35,30 +37,44 @@ struct COpenStreetMap::SImplementation{
         }
         
         std::size_t AttributeCount() const noexcept override{
-
+            return DAttributes.size();
         }
         
         std::string GetAttributeKey(std::size_t index) const noexcept override{
-
+            return DAttributes[index].first;
         }
         
         bool HasAttribute(const std::string &key) const noexcept override{
-
+            for(auto &Attribute : DAttributes){ // Looks through all attributes in DAttributes
+                if(std::get<0>(Attribute) == key){ // Finds the first element of pair
+                    return true;   // Returns true if found
+                }
+            }
+            return false; // If nothing is found, return false
         }
         
         std::string GetAttribute(const std::string &key) const noexcept override{
-
+            for(auto &Attribute : DAttributes){ // Looks through all attributes in DAttributes
+                if(std::get<0>(Attribute) == key){ // Finds the key of pair
+                    return std::get<1>(Attribute);   // Returns the value of attribute
+                }
+            }
+            return std::string(); // If nothing is found, return an empty string " "
         }
         
     };
 
     struct SWay: public CStreetMap::SWay{
+        SWay(){
+            
+        }
+
         ~SWay(){
 
         }
 
         TWayID ID() const noexcept override{
-
+            return 
         }
         
         std::size_t NodeCount() const noexcept override{
@@ -89,6 +105,9 @@ struct COpenStreetMap::SImplementation{
 
     std::vector<std::shared_ptr<SNode>> DNodesByIndex;
     std::unordered_map<TNodeID,std::shared_ptr<SNode>> DNodesByID;
+
+    std::vector<std::shared_ptr<SWay>> DWaysByIndex;
+    std::unordered_map<TNodeID,std::shared_ptr<SWay>> DWaysByID;
 
     bool FindStartTag(std::shared_ptr< CXMLReader > xmlsource, const std::string &starttag){
         SXMLEntity TempEntity;
@@ -122,6 +141,13 @@ struct COpenStreetMap::SImplementation{
                 DNodesByID[NewNode->ID()] = NewNode;
                 FindEndTag(src,DNodeTag);
             }
+
+            if(TempEntity.DType == SXMLEntity::EType::StartElement && TempEntity.DNameData == DWayTag){
+                auto NewNode = std::make_shared<SWay>(TempEntity);
+                DWaysByIndex.push_back(NewNode);
+                DWaysByID[NewNode->ID()] = NewNode;
+                FindEndTag(src,DNodeTag);
+            }
         }
 
 
@@ -136,7 +162,7 @@ struct COpenStreetMap::SImplementation{
     }
 
     std::size_t WayCount() const noexcept{
-        return 0;
+        return DWaysByIndex.size();
     }
 
     std::shared_ptr<CStreetMap::SNode> NodeByIndex(std::size_t index) const noexcept{
@@ -155,11 +181,18 @@ struct COpenStreetMap::SImplementation{
     }
 
     std::shared_ptr<CStreetMap::SWay> WayByIndex(std::size_t index) const noexcept{
-        
+        if(index < DWaysByIndex.size()){
+            return DWaysByIndex[index];
+        }
+        return nullptr;
     }
 
     std::shared_ptr<CStreetMap::SWay> WayByID(TWayID id) const noexcept{
-        
+        auto Search = DWaysByID.find(id);
+        if(Search != DWaysByID.end()){
+            return Search->second;
+        }
+        return nullptr;
     }
 
 };
