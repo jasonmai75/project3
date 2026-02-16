@@ -90,13 +90,24 @@ struct CXMLBusSystem::SImplementation{
 
         // Return starting node ID
         CStreetMap::TNodeID StartNodeID() const noexcept override {
-            return 
+            return DStartNodeID;
         }
 
         // Return ending node ID
         CStreetMap::TNodeID EndNodeID() const noexcept override {
-
+            return DEndNodeID;
         }
+
+        // Returns total num of nodes in path
+        std::size_t NodeCount() const noexcept override {
+            return DNodeIDs.size();
+        }
+
+        // Returns node ID at given index
+        CStreetMap::TNodeID GetNodeID(std::size_t index) const noexcept override {
+            return DNodeIDs[index];
+        }
+        
     };
 
     bool FindStartTag(std::shared_ptr< CXMLReader > xmlsource, const std::string &starttag){
