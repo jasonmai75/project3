@@ -295,10 +295,12 @@ struct CXMLBusSystem::SImplementation{
 
     void ParseBusSystem(std::shared_ptr< CXMLReader > systemsource){
         SXMLEntity TempEntity;
+        // Find opening <bussystem> tag
         if(!FindStartTag(systemsource,DBusSystemTag)){
             cout<<"Start tag bussystem not found"<<endl;
             return;
         }
+        // Find and Parse <stops> section
         if(!FindStartTag(systemsource,DStopsTag)){
             cout<<"Start tag stop not found"<<endl;
             return;
@@ -313,18 +315,21 @@ struct CXMLBusSystem::SImplementation{
     }
 
     SImplementation(std::shared_ptr< CXMLReader > systemsource, std::shared_ptr< CXMLReader > pathsource){
-        ParseBusSystem(systemsource);
-        ParsePaths(pathsource);
+        ParseBusSystem(systemsource);   // Parse stops and routes from bussystem.xml
+        ParsePaths(pathsource);         // Parse paths from paths.xml
     }
 
+    // Returns total number of stops
     std::size_t StopCount() const noexcept{
         return DStopsByIndex.size();
     }
 
+    // Returns total number of routes
     std::size_t RouteCount() const noexcept{
         return DRoutesByIndex.size();
     }
     
+    // Returns stop at given index, or nullptr if out of range
     std::shared_ptr<SStop> StopByIndex(std::size_t index) const noexcept{
         if(index >= DStopsByIndex.size()) {
             return nullptr;
@@ -332,6 +337,7 @@ struct CXMLBusSystem::SImplementation{
         return DStopsByIndex[index];
     }
     
+    // Returns stop with given ID or nullptr if not found
     std::shared_ptr<SStop> StopByID(TStopID id) const noexcept{
         auto Search = DStopsByID.find(id);
         if(Search != DStopsByID.end()){
@@ -340,16 +346,33 @@ struct CXMLBusSystem::SImplementation{
         return nullptr;
     }
     
+    // Returns route at given index or nullptr if out of range
     std::shared_ptr<SRoute> RouteByIndex(std::size_t index) const noexcept{
-
+        if(index >= DRoutesByIndex.size()) {
+            return nullptr;
+        }
+        return DRoutesByIndex[index];
     }
     
+    // Returns route with given name or nullptr if not found
     std::shared_ptr<SRoute> RouteByName(const std::string &name) const noexcept{
-
+        auto it = DRoutesByName.find(name);
+        if(it != DRoutesByName.end()) {
+            return it->second;
+        }
+        return nullptr;
     }
     
+    // Returns path connecting two stops, or nullptr if no path exists
     std::shared_ptr<SPath> PathByStopIDs(TStopID start, TStopID end) const noexcept{
-
+        auto it1 = DPathsByStopIDs.find(start); 
+        if(it1 != DPathsByStopIDs.end()) {
+            auto it2 = it1->second.find(end);
+            if(it2 != it1->second.end()) {
+                return it2->second;
+            }
+        }
+        return nullptr;
     }
     
 };
