@@ -21,6 +21,12 @@ TEST(OpenStreetMapTest, SimpleTest){
     EXPECT_EQ(Node->ID(),1);
     auto Location = CStreetMap::SLocation{38.5,-121.7};
     EXPECT_EQ(Node->Location(),Location);
+    
     ASSERT_EQ(OpenStreetMap.WayCount(), 1);
-
+    auto Way = OpenStreetMap.WayByIndex(0);
+    ASSERT_NE(Way, nullptr);
+    EXPECT_EQ(Way->ID(), 1000);
+    EXPECT_EQ(Way->NodeCount(), 2);
+    EXPECT_EQ(Way->GetNodeID(0), 1);
+    EXPECT_EQ(Way->GetNodeID(1), 2);
 }
