@@ -274,7 +274,7 @@ struct CXMLBusSystem::SImplementation{
 
     void ParsePaths(std::shared_ptr<CXMLReader> pathsource) {
         // Find opening <paths> tag and return if not found
-        if(!FindStartTag(pathsource, DPathTag)) {
+        if(!FindStartTag(pathsource, DPathsTag)) {
             return;
         }
 
@@ -287,7 +287,7 @@ struct CXMLBusSystem::SImplementation{
             }
 
             // When we find a <path> opening tag, parse it
-            if(TempEntity.DType == SXMLEntity::EType::StartElement && TempEntity.DNameData == DPathsTag) {
+            if(TempEntity.DType == SXMLEntity::EType::StartElement && TempEntity.DNameData == DPathTag) {
                 ParsePath(pathsource, TempEntity);
             }
         }
