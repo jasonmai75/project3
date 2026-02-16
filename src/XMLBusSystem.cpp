@@ -305,7 +305,10 @@ struct CXMLBusSystem::SImplementation{
         }
         ParseStops(systemsource);
 
-        
+        if(FindStartTag(systemsource, DRoutesTag)) {
+            ParseRoutes(systemsource);
+        }
+
     }
 
     SImplementation(std::shared_ptr< CXMLReader > systemsource, std::shared_ptr< CXMLReader > pathsource){
