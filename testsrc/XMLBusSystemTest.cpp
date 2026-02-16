@@ -11,7 +11,7 @@ TEST(XMLBusSystemTest, SimpleTest){
                                                                 "</bussystem>");
     auto BusRouteReader = std::make_shared< CXMLReader >(BusRouteSource);
     auto BusPathSource = std::make_shared<CStringDataSource>(  "<paths>\n"
-                                                                "   <path source=\"321\" destination=\"311\"/>\n"
+                                                                "   <path source=\"321\" destination=\"311\">\n"
                                                                 "      <node id=\"321\"/>\n"
                                                                 "      <node id=\"315\"/>\n"
                                                                 "      <node id=\"311\"/>\n"
