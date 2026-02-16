@@ -14,7 +14,7 @@ struct COpenStreetMap::SImplementation{
         const std::string DNodeLonAttr = "lon";
         TNodeID DID;
         SLocation DLocation;
-
+        //Vector of attributes in node tag
         TAttributes DAttributes;
 
         SNode(const SXMLEntity &entity){
@@ -68,7 +68,9 @@ struct COpenStreetMap::SImplementation{
     struct SWay: public CStreetMap::SWay{
         const std::string DWayIDAttr = "id";
         TWayID DID;
+        //Vector of attributes in way tag
         TAttributes DAttributes;
+        //Vector of reference id in <nd> tag
         std::vector<TNodeID> DNodeReferences;
 
         SWay(const SXMLEntity &entity){
@@ -172,6 +174,7 @@ struct COpenStreetMap::SImplementation{
                     if((TempEntity.DType == SXMLEntity::EType::EndElement)&&(TempEntity.DNameData == DWayTag)){
                         break;
                     }
+                    //Get the ref id
                     if((TempEntity.DType == SXMLEntity::EType::StartElement)&&(TempEntity.DNameData == DNodeReferenceTag)){
                         auto NodeRef = std::stoull(TempEntity.AttributeValue("ref"));
                         NewWay->DNodeReferences.push_back(NodeRef);
@@ -179,7 +182,6 @@ struct COpenStreetMap::SImplementation{
                 }
                 DWaysByIndex.push_back(NewWay);
                 DWaysByID[NewWay->ID()] = NewWay;
-                FindEndTag(src, DWayTag);
             }
         }
 
