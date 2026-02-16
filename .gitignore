@@ -45,3 +45,5 @@ testobj/
 htmlconv/
 
 run_*
+
+bin/
