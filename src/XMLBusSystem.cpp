@@ -6,6 +6,7 @@ using std::cout;
 using std::endl;
 
 struct CXMLBusSystem::SImplementation{
+    // Tag and Attributes
     const std::string DBusSystemTag = "bussystem";
     const std::string DStopsTag = "stops";
     const std::string DStopTag = "stop";
@@ -13,8 +14,19 @@ struct CXMLBusSystem::SImplementation{
     const std::string DStopNodeAttr = "node";
     const std::string DStopDescAttr = "description";
 
-    
+    const std::string DRoutesTag = "routes";
+    const std::string DRouteTag = "route";
+    const std::string DRouteNameAttr = "name";
+    const std::string DRouteStopTag = "routestop";
 
+    const std::string DPathsTag = "paths";
+    const std::string DPathTag = "path";
+    const std::string DPathSourceAttr = "source";
+    const std::string DPathDestAttr = "destination";
+    const std::string DNodeTag = "node";
+    const std::string DNodeIDAttr = "id";
+
+    // Represents bus stop with ID, location node, and description
     struct SStop : public CBusSystem::SStop{
         TStopID DID;                    // Stop ID
         CStreetMap::TNodeID DNodeID;    // Node ID on street map
@@ -148,6 +160,7 @@ struct CXMLBusSystem::SImplementation{
     // Path storage: nested map [start_stop][end_stop] -> path
     std::unordered_map<TStopID, std::unordered_map<TStopID, std::shared_ptr<SPath>>> DPathsByStopIDs;
 
+    // Parsing Functions
 
     void ParseStop(std::shared_ptr< CXMLReader > systemsource, const SXMLEntity &stop){
         TStopID StopID = std::stoull(stop.AttributeValue(DStopIDAttr));
