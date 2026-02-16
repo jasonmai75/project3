@@ -261,6 +261,12 @@ struct CXMLBusSystem::SImplementation{
             }
         }
 
+        // Set start and end node IDs from collected nodes
+        if(!NewPath->DNodeIDs.empty()) {
+            NewPath->DStartNodeID = NewPath->DNodeIDs.front();
+             NewPath->DEndNodeID = NewPath->DNodeIDs.back();
+        }
+
         // Store in container
         DPathsByStopIDs[FromStop][ToStop] = NewPath;
      }
