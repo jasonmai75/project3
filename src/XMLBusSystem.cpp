@@ -199,10 +199,43 @@ struct CXMLBusSystem::SImplementation{
         // Get route name from attributes
         std::string RouteName = route.AttributeValue(DRouteNameAttr);
         auto NewRoute = std::make_shared<SRoute>(RouteName);
+
+        SXMLEntity TempEntity; 
+
+        // Read all <routestop> tags within the <route>
+        while(systemsource->ReadEntity(TempEntity, true)) {
+            // Stop when hitting </route> closing tag
+            if(TempEntity.DType == SXMLEntity::EType::EndElement && TempEntity.DNameData == DRouteTag) {
+                break;
+            }
+
+            // Each <routestop stop="X"/> adds a stop to the route
+            if(TempEntity.DType == SXMLEntity::EType::StartElement && TempEntity.DNameData == DRouteStopTag) {
+                TStopID StopID = std::stoull(TempEntity.AttributeValue(DStopIDAttr));
+                NewRoute->DStopIDs.push_back(StopID);
+            }
+        }
+
+        // Store route in both containers
+        DRoutesByIndex.push_back(NewRoute);
+        DRoutesByName[RouteName] = NewRoute;
+
     }
 
     void ParseRoutes(std::shared_ptr< CXMLReader > systemsource){
+        SXMLEntity TempEnitity;
 
+        // Read entities until we hit </route> closing tag
+        while(systemsource->ReadEntity(TempEntity, true)) {
+            if(TempEntity.DType == SXMLEntity::EType::EndElement && TempEntity.DNameData == DRoutesTag) {
+                break;
+            }
+
+            // When we find a <route> opening tag, parse it
+            if(TempEntity.DType == SXMLEntity::EType::StartElement && TempEntity.DNameData == DRouteTag) {
+                ParseRoute(systemsource, TempEntity);
+            }
+        }
     }
 
     void ParsePath(std::shared_ptr<CXMLReader> pathsource, const SXMLEntity &path) {
