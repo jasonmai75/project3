@@ -107,19 +107,24 @@ struct CXMLBusSystem::SImplementation{
         CStreetMap::TNodeID GetNodeID(std::size_t index) const noexcept override {
             return DNodeIDs[index];
         }
-        
+
     };
 
+    // Helper Functions
+
+    // Searches XML stream for specific opening tag and returns true if found and false if it reaches the end without finding it
     bool FindStartTag(std::shared_ptr< CXMLReader > xmlsource, const std::string &starttag){
         SXMLEntity TempEntity;
-        while(xmlsource->ReadEntity(TempEntity,true)){
+        while(xmlsource->ReadEntity(TempEntity,true)){  // true = skip char data
+            // If found, then return true
             if((TempEntity.DType == SXMLEntity::EType::StartElement)&&(TempEntity.DNameData == starttag)){
                 return true;
             }
         }
-        return false;
+        return false; // Otherwise, return false
     }
 
+    // Same as last function, however with the end tag
     bool FindEndTag(std::shared_ptr< CXMLReader > xmlsource, const std::string &starttag){
         SXMLEntity TempEntity;
         while(xmlsource->ReadEntity(TempEntity,true)){
@@ -130,8 +135,19 @@ struct CXMLBusSystem::SImplementation{
         return false;
     }
 
+    // Data Storage
+
+    // Stop storage: by index (is fastest lookup) and by ID (for fast lookup)
     std::vector<std::shared_ptr<SStop> > DStopsByIndex;
     std::unordered_map<TStopID,std::shared_ptr<SStop> > DStopsByID;
+
+    // Route storage: should be by index (fast iteration) and name (fast lookup)
+    std::vector<std::shared_ptr<SRoute>> DRoutesByIndex;
+    std::unordered_map<std::string, std::shared_ptr<SRoute>> DRoutesByName;
+
+    // Path storage: nested map [start_stop][end_stop] -> path
+    std::unordered_map<TStopID, std::unordered_map<TStopID, std::shared_ptr<SPath>>> DPathsByStopIDs;
+
 
     void ParseStop(std::shared_ptr< CXMLReader > systemsource, const SXMLEntity &stop){
         TStopID StopID = std::stoull(stop.AttributeValue(DStopIDAttr));
