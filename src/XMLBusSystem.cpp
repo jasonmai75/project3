@@ -194,15 +194,24 @@ struct CXMLBusSystem::SImplementation{
         }while((TempEntity.DType != SXMLEntity::EType::EndElement)||(TempEntity.DNameData != DStopsTag));
     }
 
-    void ParseRoute(std::shared_ptr< CXMLReader > systemsource){
-
+    // Parses single <route> element with its list of stops
+    void ParseRoute(std::shared_ptr< CXMLReader > systemsource, const SXMLEntity &route){
+        // Get route name from attributes
+        std::string RouteName = route.AttributeValue(DRouteNameAttr);
+        auto NewRoute = std::make_shared<SRoute>(RouteName);
     }
 
     void ParseRoutes(std::shared_ptr< CXMLReader > systemsource){
 
     }
 
-    
+    void ParsePath(std::shared_ptr<CXMLReader> pathsource, const SXMLEntity &path) {
+
+    }
+
+    void ParsePaths(std::shared_ptr<CXMLReader> pathsource) {
+
+    }
 
     void ParseBusSystem(std::shared_ptr< CXMLReader > systemsource){
         SXMLEntity TempEntity;
@@ -220,7 +229,7 @@ struct CXMLBusSystem::SImplementation{
 
     SImplementation(std::shared_ptr< CXMLReader > systemsource, std::shared_ptr< CXMLReader > pathsource){
         ParseBusSystem(systemsource);
-        
+        ParsePaths(pathsource);
     }
 
     std::size_t StopCount() const noexcept{
@@ -228,10 +237,13 @@ struct CXMLBusSystem::SImplementation{
     }
 
     std::size_t RouteCount() const noexcept{
-        return 0;
+        return DRoutesByIndex.size();
     }
     
     std::shared_ptr<SStop> StopByIndex(std::size_t index) const noexcept{
+        if(index >= DStopsByIndex.size()) {
+            return nullptr;
+        }
         return DStopsByIndex[index];
     }
     
