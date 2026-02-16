@@ -236,6 +236,10 @@ struct CXMLBusSystem::SImplementation{
     }
     
     std::shared_ptr<SStop> StopByID(TStopID id) const noexcept{
+        auto Search = DStopsByID.find(id);
+        if(Search != DStopsByID.end()){
+            return Search->second;
+        }
         return nullptr;
     }
     
