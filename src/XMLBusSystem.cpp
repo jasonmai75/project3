@@ -305,7 +305,8 @@ struct CXMLBusSystem::SImplementation{
         }
         ParseStops(systemsource);
 
-        if(FindStartTag(systemsource, DRoutesTag)) {
+        // Find and parse <routes> section (if it exists)
+        if(FindStartTag(systemsource, DRoutesTag)) { 
             ParseRoutes(systemsource);
         }
 
