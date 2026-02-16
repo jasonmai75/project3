@@ -13,6 +13,7 @@ LIB_DIR				= ./lib
 TESTOBJ_DIR			= ./testobj
 TESTBIN_DIR			= ./testbin
 TESTCOVER_DIR		= ./htmlconv
+TESTTMP_DIR			= ./testtmp
 
 # Define the flags for compilation/linking
 PKGS				= expat
@@ -53,6 +54,10 @@ TEST_XMLBS_OBJ			= $(TESTOBJ_DIR)/XMLBusSystem.o
 TEST_XMLBS_TEST_OBJ		= $(TESTOBJ_DIR)/XMLBusSystemTest.o
 TEST_XMLBS_OBJ_FILES	= $(TEST_STRSRC_OBJ) $(TEST_XMLREADER_OBJ) $(TEST_XMLBS_OBJ) $(TEST_XMLBS_TEST_OBJ)
 
+TEST_OSM_OBJ			= $(TESTOBJ_DIR)/OpenStreetMap.o
+TEST_OSM_TEST_OBJ		= $(TESTOBJ_DIR)/OpenStreetMapTest.o
+TEST_OSM_OBJ_FILES		= $(TEST_STRSRC_OBJ) $(TEST_XMLREADER_OBJ) $(TEST_OSM_OBJ) $(TEST_OSM_TEST_OBJ)
+
 # Define the targets
 TEST_TARGET			= $(TESTBIN_DIR)/testsvg
 
@@ -74,12 +79,27 @@ TEST_XMLREADER_TARGET = $(TESTBIN_DIR)/testxml
 
 TEST_XMLBS_TARGET		= $(TESTBIN_DIR)/testxmlbs
 
+TEST_OSM_TARGET		= $(TESTBIN_DIR)/testosm
+
 # All these get ran
-all: directories $(STATIC_LIB) runmain xmldiff run_svgtest run_sinktest run_srctest run_svgwritertest run_xmltest run_xmlbstest gen_html
+all: directories \
+	make_svglib \
+	runmain \
+	xmldiff \
+	run_svgtest \
+	run_sinktest \
+	run_srctest \
+	run_svgwritertest \
+	run_xmltest \
+	run_xmlbstest \
+	run_osmtest \
+	gen_html
 
 run_svgtest: $(TEST_SVG_TARGET)
 	$(TEST_SVG_TARGET) --gtest_output=xml:$(TESTTMP_DIR)/$@
 	mv $(TESTTMP_DIR)/$@ $@
+
+make_svglib: $(STATIC_LIB)
 
 run_sinktest: $(TEST_STRSINK_TARGET)
 	$(TEST_STRSINK_TARGET) --gtest_output=xml:$(TESTTMP_DIR)/$@
@@ -99,6 +119,10 @@ run_xmltest: $(TEST_XMLREADER_TARGET)
 
 run_xmlbstest: $(TEST_XMLBS_TARGET)
 	$(TEST_XMLBS_TARGET) --gtest_output=xml:$(TESTTMP_DIR)/$@
+	mv $(TESTTMP_DIR)/$@ $@
+
+run_osmtest: $(TEST_OSM_TARGET)
+	$(TEST_OSM_TARGET) --gtest_output=xml:$(TESTTMP_DIR)/$@
 	mv $(TESTTMP_DIR)/$@ $@
 
 gen_html:
@@ -142,6 +166,9 @@ $(TEST_SVG_OBJ): $(SRC_DIR)/svg.c
 
 $(TEST_XMLBS_TARGET): $(TEST_XMLBS_OBJ_FILES)
 	$(CXX) $(TEST_CFLAGS) $(TEST_CPPFLAGS) $(TEST_XMLBS_OBJ_FILES) $(TEST_LDFLAGS) -o $(TEST_XMLBS_TARGET)
+
+$(TEST_OSM_TARGET): $(TEST_OSM_OBJ_FILES)
+	$(CXX) $(TEST_CFLAGS) $(TEST_CPPFLAGS) $(TEST_OSM_OBJ_FILES) $(TEST_LDFLAGS) -o $(TEST_OSM_TARGET)
 
 $(TEST_SVG_TEST_OBJ): $(TESTSRC_DIR)/SVGTest.cpp
 	$(CXX) $(TEST_CFLAGS) $(TEST_CPPFLAGS) $(DEFINES) $(INCLUDE) -c $(TESTSRC_DIR)/SVGTest.cpp -o $(TEST_SVG_TEST_OBJ)
