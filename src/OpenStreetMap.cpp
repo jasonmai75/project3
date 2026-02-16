@@ -189,7 +189,7 @@ struct COpenStreetMap::SImplementation{
     }
 
     SImplementation(std::shared_ptr<CXMLReader> src){
-
+        ParseOSM(src);
     }
 
     std::size_t NodeCount() const noexcept{
