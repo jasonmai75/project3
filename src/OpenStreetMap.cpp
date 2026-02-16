@@ -185,7 +185,7 @@ struct COpenStreetMap::SImplementation{
             }
         }
 
-
+        return true;
     }
 
     SImplementation(std::shared_ptr<CXMLReader> src){
