@@ -223,7 +223,7 @@ struct CXMLBusSystem::SImplementation{
     }
 
     void ParseRoutes(std::shared_ptr< CXMLReader > systemsource){
-        SXMLEntity TempEnitity;
+        SXMLEntity TempEntity;
 
         // Read entities until we hit </route> closing tag
         while(systemsource->ReadEntity(TempEntity, true)) {
@@ -239,8 +239,32 @@ struct CXMLBusSystem::SImplementation{
     }
 
     void ParsePath(std::shared_ptr<CXMLReader> pathsource, const SXMLEntity &path) {
+        // Extract attributes
+        TStopID FromStop = std::stoull(path.AttributeValue(DPathSourceAttr));
+        TStopID ToStop = std::stoull(path.AttributeValue(DPathDestAttr));
 
-    }
+        // Create Object
+        auto NewPath = std::make_shared<SPath>();
+
+        // Loop through nested elements
+        SXMLEntity TempEntity;
+        while(pathsource->ReadEntity(TempEntity, true)) {
+            // Stop at closing tag
+            if(TempEntity.DType == SXMLEntity::EType::EndElement && TempEntity.DNameData == DPathTag) {
+                break;
+            }
+
+            // Add nested element data to route
+            if(TempEntity.DType == SXMLEntity::EType::StartElement && TempEntity.DNameData == DNodeTag) {
+                CStreetMap::TNodeID NodeID = std::stoull(TempEntity.AttributeValue(DNodeIDAttr));
+                NewPath->DNodeIDs.push_back(NodeID); // Add to object
+            }
+        }
+
+        // Store in container
+        DPathsByStopIDs[FromStop][ToStop] = NewPath;
+     }
+    
 
     void ParsePaths(std::shared_ptr<CXMLReader> pathsource) {
 
