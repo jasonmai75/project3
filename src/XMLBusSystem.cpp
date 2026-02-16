@@ -272,13 +272,13 @@ std::shared_ptr<CBusSystem::SStop> CXMLBusSystem::StopByID(TStopID id) const noe
 }
 
 std::shared_ptr<CBusSystem::SRoute> CXMLBusSystem::RouteByIndex(std::size_t index) const noexcept{
-
+    return DImplementation->RouteByIndex(index);
 }
 
 std::shared_ptr<CBusSystem::SRoute> CXMLBusSystem::RouteByName(const std::string &name) const noexcept{
-
+    return DImplementation->RouteByName(name);
 }
 
 std::shared_ptr<CBusSystem::SPath> CXMLBusSystem::PathByStopIDs(TStopID start, TStopID end) const noexcept{
-
+    return DImplementation->PathByStopIDs(start, end);
 }
