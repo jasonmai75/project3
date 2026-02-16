@@ -267,7 +267,24 @@ struct CXMLBusSystem::SImplementation{
     
 
     void ParsePaths(std::shared_ptr<CXMLReader> pathsource) {
+        // Find opening <paths> tag and return if not found
+        if(!FindStartTag(pathsource, DPathTag)) {
+            return;
+        }
 
+        SXMLEntity TempEntity;
+
+        // Read entities until we hit </paths> closing tag
+        while(pathsource->ReadEntity(TempEntity, true)) {
+            if(TempEntity.DType == SXMLEntity::EType::EndElement && TempEntity.DNameData == DPathsTag) {
+                break;
+            }
+
+            // When we find a <path> opening tag, parse it
+            if(TempEntity.DType == SXMLEntity::EType::StartElement && TempEntity.DNameData == DPathsTag) {
+                ParsePath(pathsource, TempEntity);
+            }
+        }
     }
 
     void ParseBusSystem(std::shared_ptr< CXMLReader > systemsource){
