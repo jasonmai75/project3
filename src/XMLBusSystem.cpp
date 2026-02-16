@@ -52,6 +52,25 @@ struct CXMLBusSystem::SImplementation{
         }
     };
 
+    struct SRoute : public CBusSystem::SRoute {
+        std::string DName;
+        std::vector<TStopID> DStopIDs;
+
+        SRoute(const std::string &name) : DName(name) {}
+
+        ~SRoute() {}
+    }
+    
+    struct SPath : public CBusSystem::SPath {
+        CStreetMap::TNodeID DStartNodeID;
+        CStreetMap::TNodeID DEndNodeID;
+        std::vector<CStreetMap::TNodeID> DNodeIDs;
+
+        SPath() : DStartNodeID(CStreetMap::InvalidNodeID), DEndNodeID(CStreetMap::InvalidNodeID) {}
+
+        ~SPath(){}
+    }
+
     bool FindStartTag(std::shared_ptr< CXMLReader > xmlsource, const std::string &starttag){
         SXMLEntity TempEntity;
         while(xmlsource->ReadEntity(TempEntity,true)){
