@@ -16,30 +16,39 @@ struct CXMLBusSystem::SImplementation{
     
 
     struct SStop : public CBusSystem::SStop{
-        TStopID DID;
-        CStreetMap::TNodeID DNodeID;
-        std::string DDescription;
+        TStopID DID; // Stop ID
+        CStreetMap::TNodeID DNodeID; // Node ID on street map
+        std::string DDescription; // Readable Description 
 
+        // Constructor
         SStop(TStopID id, CStreetMap::TNodeID nodeid, const std::string &description){
             DID = id;
             DNodeID = nodeid;
             DDescription = description;
         }
+
+        // Destructor
         ~SStop(){};
+
+        // Returns the stop ID
         TStopID ID() const noexcept override{
-            
+            return DID;
         }
 
+        // Returns the node ID where this stop is located
         CStreetMap::TNodeID NodeID() const noexcept override{
-            
+            return DNodeID;
         }
 
+        // Returns the stop description (getter)
         std::string Description() const noexcept override{
-            
+            return DDescription;
         }
 
+        // Sets and returns the stop description (setter)
         std::string Description(const std::string &description) noexcept override{
-            
+            DDescription = description;
+            return DDescription;
         }
     };
 
