@@ -5,6 +5,7 @@ struct COpenStreetMap::SImplementation{
     const std::string DOSMTag = "osm";
     const std::string DNodeTag = "node";
     const std::string DWayTag = "way";
+    const std::string DNodeReferenceTag = "nd";
 
 
     struct SNode: public CStreetMap::SNode{
@@ -65,8 +66,15 @@ struct COpenStreetMap::SImplementation{
     };
 
     struct SWay: public CStreetMap::SWay{
-        SWay(){
-            
+        const std::string DWayIDAttr = "id";
+        TWayID DID;
+        TAttributes DAttributes;
+        std::vector<TNodeID> DNodeReferences;
+
+        SWay(const SXMLEntity &entity){
+            auto WayID = std::stoull(entity.AttributeValue(DWayIDAttr));
+            DID = WayID;
+            DAttributes = entity.DAttributes;    
         }
 
         ~SWay(){
@@ -74,31 +82,45 @@ struct COpenStreetMap::SImplementation{
         }
 
         TWayID ID() const noexcept override{
-            return 
+            return DID;
         }
         
         std::size_t NodeCount() const noexcept override{
-
+            return DNodeReferences.size();
         }
         
         TNodeID GetNodeID(std::size_t index) const noexcept override{
+            if(index >= NodeCount()){
+                return InvalidNodeID;
+            }
 
+            return DNodeReferences[index];
         }
         
         std::size_t AttributeCount() const noexcept override{
-
+            return DAttributes.size();
         }
         
         std::string GetAttributeKey(std::size_t index) const noexcept override{
-
+            return DAttributes[index].first;
         }
         
         bool HasAttribute(const std::string &key) const noexcept override{
-
+            for(auto &Attribute : DAttributes){ // Looks through all attributes in DAttributes
+                if(std::get<0>(Attribute) == key){ // Finds the first element of pair
+                    return true;   // Returns true if found
+                }
+            }
+            return false; // If nothing is found, return false
         }
         
         std::string GetAttribute(const std::string &key) const noexcept override{
-
+            for(auto &Attribute : DAttributes){ // Looks through all attributes in DAttributes
+                if(std::get<0>(Attribute) == key){ // Finds the key of pair
+                    return std::get<1>(Attribute);   // Returns the value of attribute
+                }
+            }
+            return std::string(); // If nothing is found, return an empty string " "
         }
         
     };
@@ -143,10 +165,21 @@ struct COpenStreetMap::SImplementation{
             }
 
             if(TempEntity.DType == SXMLEntity::EType::StartElement && TempEntity.DNameData == DWayTag){
-                auto NewNode = std::make_shared<SWay>(TempEntity);
-                DWaysByIndex.push_back(NewNode);
-                DWaysByID[NewNode->ID()] = NewNode;
-                FindEndTag(src,DNodeTag);
+                auto NewWay = std::make_shared<SWay>(TempEntity);
+                //Find and read the <nd> between way
+                while(src->ReadEntity(TempEntity,true)){
+                    //stop if see end tag
+                    if((TempEntity.DType == SXMLEntity::EType::EndElement)&&(TempEntity.DNameData == DWayTag)){
+                        break;
+                    }
+                    if((TempEntity.DType == SXMLEntity::EType::StartElement)&&(TempEntity.DNameData == DNodeReferenceTag)){
+                        auto NodeRef = std::stoull(TempEntity.AttributeValue("ref"));
+                        NewWay->DNodeReferences.push_back(NodeRef);
+                    }
+                }
+                DWaysByIndex.push_back(NewWay);
+                DWaysByID[NewWay->ID()] = NewWay;
+                FindEndTag(src, DWayTag);
             }
         }
 
