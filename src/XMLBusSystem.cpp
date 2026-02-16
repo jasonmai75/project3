@@ -16,9 +16,9 @@ struct CXMLBusSystem::SImplementation{
     
 
     struct SStop : public CBusSystem::SStop{
-        TStopID DID; // Stop ID
-        CStreetMap::TNodeID DNodeID; // Node ID on street map
-        std::string DDescription; // Readable Description 
+        TStopID DID;                    // Stop ID
+        CStreetMap::TNodeID DNodeID;    // Node ID on street map
+        std::string DDescription;       // Readable Description 
 
         // Constructor
         SStop(TStopID id, CStreetMap::TNodeID nodeid, const std::string &description){
@@ -52,14 +52,32 @@ struct CXMLBusSystem::SImplementation{
         }
     };
 
+    // Represents bus route with name and list of stops
     struct SRoute : public CBusSystem::SRoute {
-        std::string DName;
-        std::vector<TStopID> DStopIDs;
+        std::string DName;                  // Route Name
+        std::vector<TStopID> DStopIDs;      // Ordered list of stop IDs on this route
 
+        // Constructor
         SRoute(const std::string &name) : DName(name) {}
 
+        // Destructor
         ~SRoute() {}
-    }
+
+        // Returns route name
+        std::string Name() const noexcept override{
+            return DName;
+        }
+
+        // Returns how many stops are on this route
+        std::size_t StopCount() const noexcept override {
+            return DStopIDs.size();
+        }
+
+        // Returns stop ID at given index
+        TStopID GetStopID(std::size_t index) const noexcept override {
+            return DStopIDs[index];
+        }
+    };
     
     struct SPath : public CBusSystem::SPath {
         CStreetMap::TNodeID DStartNodeID;
@@ -69,7 +87,17 @@ struct CXMLBusSystem::SImplementation{
         SPath() : DStartNodeID(CStreetMap::InvalidNodeID), DEndNodeID(CStreetMap::InvalidNodeID) {}
 
         ~SPath(){}
-    }
+
+        // Return starting node ID
+        CStreetMap::TNodeID StartNodeID() const noexcept override {
+            return 
+        }
+
+        // Return ending node ID
+        CStreetMap::TNodeID EndNodeID() const noexcept override {
+
+        }
+    };
 
     bool FindStartTag(std::shared_ptr< CXMLReader > xmlsource, const std::string &starttag){
         SXMLEntity TempEntity;
