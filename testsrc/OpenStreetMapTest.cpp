@@ -121,4 +121,41 @@ TEST(OpenStreetMapTest, WayTest){
     EXPECT_EQ(Way->NodeCount(), 2);
     EXPECT_EQ(Way->GetNodeID(0), 62248792);
     EXPECT_EQ(Way->GetNodeID(1), 2549420729);
+    EXPECT_EQ(Way->AttributeCount(),3);
+    std::string Key = Way->GetAttributeKey(1);
+    EXPECT_EQ(Key, "bridge");
+    EXPECT_EQ(Way->HasAttribute(Key), true);
+    EXPECT_EQ(Way->GetAttribute(Key), "yes");
+}
+
+TEST(OpenStreetMapTest, ErrorTest){
+    auto ErrorOSMSource = std::make_shared<CStringDataSource>( "</osm>");
+    auto ErrorOSMReader = std::make_shared< CXMLReader >(ErrorOSMSource);
+    COpenStreetMap ErrorOpenStreetMap(ErrorOSMReader);
+    
+    EXPECT_EQ(ErrorOpenStreetMap.WayCount(), 0);
+    EXPECT_EQ(ErrorOpenStreetMap.NodeCount(), 0);
+    EXPECT_EQ(ErrorOpenStreetMap.NodeByID(67), nullptr);
+    EXPECT_EQ(ErrorOpenStreetMap.WayByID(67), nullptr);
+    EXPECT_EQ(ErrorOpenStreetMap.NodeByIndex(67), nullptr);
+    EXPECT_EQ(ErrorOpenStreetMap.WayByIndex(67), nullptr);
+
+    auto OSMSource = std::make_shared<CStringDataSource>(  "<osm version=\"0.6\" generator=\"osmconvert 0.8.5\">\n"
+                                                            "   <node id=\"1\" lat=\"38.5\" lon=\"-121.7\"/>\n"
+                                                            "   <way id=\"8706922\"/>\n"
+                                                            "</osm>"
+                                                            );
+    auto OSMReader = std::make_shared< CXMLReader >(OSMSource);
+    COpenStreetMap OpenStreetMap(OSMReader);
+    
+    auto Node = OpenStreetMap.NodeByID(1);
+    std::string dummyAttribute = "abcd";
+    EXPECT_EQ(Node->HasAttribute(dummyAttribute), false);
+    EXPECT_EQ(Node->GetAttribute(dummyAttribute), "");
+    
+    auto Way = OpenStreetMap.WayByID(8706922);
+    EXPECT_EQ(Way->NodeCount(), 0);
+    EXPECT_EQ(Way->GetNodeID(12345), OpenStreetMap.InvalidNodeID);
+    EXPECT_EQ(Way->HasAttribute(dummyAttribute), false);
+    EXPECT_EQ(Way->GetAttribute(dummyAttribute), "");
 }
