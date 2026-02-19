@@ -84,7 +84,47 @@ TEST(XMLBusSystemTest, RouteTest){
 }
 
 TEST(XMLBusSystemTest, PathTest){
+    auto BusRouteSource = std::make_shared<CStringDataSource>(  "<bussystem>\n"
+                                                                "<stops>\n"
+                                                                "   <stop id=\"1\" node=\"321\" description=\"First\"/>\n"
+                                                                "   <stop id=\"2\" node=\"311\" description=\"second\"/>\n"
+                                                                "   <stop id=\"3\" node=\"300\" description=\"Third\"/>\n"
+                                                                "</stops>\n"
+                                                                "<routes>\n"
+                                                                "   <route name=\"A\">"
+                                                                "       <routestop stop=\"1\" />"
+                                                                "       <routestop stop=\"2\" />"
+                                                                "       <routestop stop=\"3\" />"
+                                                                "   </route>\n"
+                                                                "   <route name=\"B\">"
+                                                                "       <routestop stop=\"3\" />"
+                                                                "       <routestop stop=\"2\" />"
+                                                                "       <routestop stop=\"1\" />"
+                                                                "   </route>\n"
+                                                                "</routes>\n"
+                                                                "</bussystem>");
+    auto BusRouteReader = std::make_shared< CXMLReader >(BusRouteSource);
+    auto BusPathSource = std::make_shared<CStringDataSource>(  "<paths>\n"
+                                                                "   <path source=\"321\" destination=\"311\">\n"
+                                                                "      <node id=\"321\"/>\n"
+                                                                "      <node id=\"315\"/>\n"
+                                                                "      <node id=\"311\"/>\n"
+                                                                "   </path>\n"
+                                                                "   <path source=\"345\" destination=\"370\">\n"
+                                                                "      <node id=\"345\"/>\n"
+                                                                "      <node id=\"356\"/>\n"
+                                                                "      <node id=\"367\"/>\n"
+                                                                "      <node id=\"370\"/>\n"
+                                                                "   </path>\n"
+                                                                "</paths>");
+    auto BusPathReader = std::make_shared< CXMLReader >(BusPathSource);
+    CXMLBusSystem BusSystem(BusRouteReader,BusPathReader);
     
+    auto Path = BusSystem.PathByStopIDs(321, 311);
+    EXPECT_EQ(Path->StartNodeID(), 321);
+    EXPECT_EQ(Path->EndNodeID(), 311);
+    EXPECT_EQ(Path->NodeCount(),3);
+    EXPECT_EQ(Path->GetNodeID(1), 315);
 }
 
 
