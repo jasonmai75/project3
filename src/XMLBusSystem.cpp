@@ -320,10 +320,11 @@ struct CXMLBusSystem::SImplementation{
         ParseStops(systemsource);
 
         // Find and parse <routes> section (if it exists)
-        if(FindStartTag(systemsource, DRoutesTag)) { 
-            ParseRoutes(systemsource);
+        if(!FindStartTag(systemsource, DRoutesTag)) { 
+            cout<<"Start tag route not found"<<endl;
+            return;
         }
-
+        ParseRoutes(systemsource);
     }
 
     SImplementation(std::shared_ptr< CXMLReader > systemsource, std::shared_ptr< CXMLReader > pathsource){
