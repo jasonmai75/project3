@@ -168,16 +168,25 @@ struct CXMLBusSystem::SImplementation{
 
     // Parsing Functions
 
+    // Parses a single <stop> element and stores it
     void ParseStop(std::shared_ptr< CXMLReader > systemsource, const SXMLEntity &stop){
+        // Extract stop attributes
         TStopID StopID = std::stoull(stop.AttributeValue(DStopIDAttr));
         CStreetMap::TNodeID NodeID = std::stoull(stop.AttributeValue(DStopNodeAttr));
+
+        // Create new stop object with extracted data
         auto NewStop = std::make_shared<SStop>(StopID, NodeID, stop.AttributeValue(DStopDescAttr));
+
+        // Store in both containers 
         DStopsByIndex.push_back(NewStop);
         cout<<"DStopsByIndex "<<DStopsByIndex.size()<<endl;
         DStopsByID[StopID] = NewStop;
+
+        // Move to closing </stop> tag
         FindEndTag(systemsource,DStopTag);
     }
 
+    // Parses all stops within <stops> section
     void ParseStops(std::shared_ptr< CXMLReader > systemsource){
         SXMLEntity TempEntity;
 
@@ -222,6 +231,7 @@ struct CXMLBusSystem::SImplementation{
 
     }
 
+    // Parses all routes within section
     void ParseRoutes(std::shared_ptr< CXMLReader > systemsource){
         SXMLEntity TempEntity;
 
@@ -238,6 +248,7 @@ struct CXMLBusSystem::SImplementation{
         }
     }
 
+    // Parses a single <path> element with its node sequence
     void ParsePath(std::shared_ptr<CXMLReader> pathsource, const SXMLEntity &path) {
         // Extract attributes
         TStopID FromStop = std::stoull(path.AttributeValue(DPathSourceAttr));
@@ -271,7 +282,7 @@ struct CXMLBusSystem::SImplementation{
         DPathsByStopIDs[FromStop][ToStop] = NewPath;
      }
     
-
+     // Parses all paths within <paths> section
     void ParsePaths(std::shared_ptr<CXMLReader> pathsource) {
         // Find opening <paths> tag and return if not found
         if(!FindStartTag(pathsource, DPathsTag)) {
