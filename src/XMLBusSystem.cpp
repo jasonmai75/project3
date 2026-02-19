@@ -401,7 +401,7 @@ std::size_t CXMLBusSystem::StopCount() const noexcept{
 }
     
 std::size_t CXMLBusSystem::RouteCount() const noexcept{
-    return 0;
+    return DImplementation->RouteCount();
 }
 
 std::shared_ptr<CBusSystem::SStop> CXMLBusSystem::StopByIndex(std::size_t index) const noexcept{

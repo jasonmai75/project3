@@ -6,6 +6,7 @@ struct COpenStreetMap::SImplementation{
     const std::string DNodeTag = "node";
     const std::string DWayTag = "way";
     const std::string DNodeReferenceTag = "nd";
+    const std::string DAttributeTag = "tag";
 
 
     struct SNode: public CStreetMap::SNode{
@@ -23,7 +24,6 @@ struct COpenStreetMap::SImplementation{
             auto NodeLon = std::stod(entity.AttributeValue(DNodeLonAttr));
             DID = NodeID;
             DLocation = SLocation{NodeLat,NodeLon};
-            DAttributes = entity.DAttributes;
         }
         ~SNode(){
 
@@ -75,8 +75,7 @@ struct COpenStreetMap::SImplementation{
 
         SWay(const SXMLEntity &entity){
             auto WayID = std::stoull(entity.AttributeValue(DWayIDAttr));
-            DID = WayID;
-            DAttributes = entity.DAttributes;    
+            DID = WayID;  
         }
 
         ~SWay(){
@@ -143,14 +142,50 @@ struct COpenStreetMap::SImplementation{
         return false;
     }
 
-    bool FindEndTag(std::shared_ptr< CXMLReader > xmlsource, const std::string &starttag){
+    void ParseNode(std::shared_ptr< CXMLReader > xmlsource, const SXMLEntity &node){
+        auto NewNode = std::make_shared<SNode>(node);
         SXMLEntity TempEntity;
+
         while(xmlsource->ReadEntity(TempEntity,true)){
-            if((TempEntity.DType == SXMLEntity::EType::EndElement)&&(TempEntity.DNameData == starttag)){
-                return true;
+            //stop if see end tag
+            if((TempEntity.DType == SXMLEntity::EType::EndElement)&&(TempEntity.DNameData == DNodeTag)){
+                break;
+            }
+
+            if((TempEntity.DType == SXMLEntity::EType::StartElement)&&(TempEntity.DNameData == DAttributeTag)){
+                auto Key =TempEntity.AttributeValue("k");
+                auto Value =TempEntity.AttributeValue("v");
+                NewNode->DAttributes.push_back({Key, Value});
             }
         }
-        return false;
+        DNodesByIndex.push_back(NewNode);
+        DNodesByID[NewNode->ID()] = NewNode;
+    }
+
+    void ParseWay(std::shared_ptr< CXMLReader > xmlsource, const SXMLEntity &way){
+        auto NewWay = std::make_shared<SWay>(way);
+        SXMLEntity TempEntity;
+
+        //Find and read the <nd> between way
+        while(xmlsource->ReadEntity(TempEntity,true)){
+            //stop if see end tag
+            if((TempEntity.DType == SXMLEntity::EType::EndElement)&&(TempEntity.DNameData == DWayTag)){
+                break;
+            }
+            //Get the ref id
+            if((TempEntity.DType == SXMLEntity::EType::StartElement)&&(TempEntity.DNameData == DNodeReferenceTag)){
+                auto NodeRef = std::stoull(TempEntity.AttributeValue("ref"));
+                NewWay->DNodeReferences.push_back(NodeRef);
+            }
+
+            if((TempEntity.DType == SXMLEntity::EType::StartElement)&&(TempEntity.DNameData == DAttributeTag)){
+                auto Key =TempEntity.AttributeValue("k");
+                auto Value =TempEntity.AttributeValue("v");
+                NewWay->DAttributes.push_back({Key, Value});
+            }
+        }
+        DWaysByIndex.push_back(NewWay);
+        DWaysByID[NewWay->ID()] = NewWay;
     }
 
     bool ParseOSM(std::shared_ptr<CXMLReader> src){
@@ -158,30 +193,13 @@ struct COpenStreetMap::SImplementation{
         if(!FindStartTag(src,DOSMTag)){
             return false;
         }
-        while(src->ReadEntity(TempEntity)){
+        while(src->ReadEntity(TempEntity, true)){
             if(TempEntity.DType == SXMLEntity::EType::StartElement && TempEntity.DNameData == DNodeTag){
-                auto NewNode = std::make_shared<SNode>(TempEntity);
-                DNodesByIndex.push_back(NewNode);
-                DNodesByID[NewNode->ID()] = NewNode;
-                FindEndTag(src,DNodeTag);
+                ParseNode(src, TempEntity);
             }
 
             if(TempEntity.DType == SXMLEntity::EType::StartElement && TempEntity.DNameData == DWayTag){
-                auto NewWay = std::make_shared<SWay>(TempEntity);
-                //Find and read the <nd> between way
-                while(src->ReadEntity(TempEntity,true)){
-                    //stop if see end tag
-                    if((TempEntity.DType == SXMLEntity::EType::EndElement)&&(TempEntity.DNameData == DWayTag)){
-                        break;
-                    }
-                    //Get the ref id
-                    if((TempEntity.DType == SXMLEntity::EType::StartElement)&&(TempEntity.DNameData == DNodeReferenceTag)){
-                        auto NodeRef = std::stoull(TempEntity.AttributeValue("ref"));
-                        NewWay->DNodeReferences.push_back(NodeRef);
-                    }
-                }
-                DWaysByIndex.push_back(NewWay);
-                DWaysByID[NewWay->ID()] = NewWay;
+                ParseWay(src, TempEntity);
             }
         }
 
