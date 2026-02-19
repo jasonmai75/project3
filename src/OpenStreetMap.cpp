@@ -1,6 +1,7 @@
 #include "OpenStreetMap.h"
 #include <unordered_map>
-
+//Internal implementation
+//Cannot be access outside
 struct COpenStreetMap::SImplementation{
     const std::string DOSMTag = "osm";
     const std::string DNodeTag = "node";
@@ -8,14 +9,14 @@ struct COpenStreetMap::SImplementation{
     const std::string DNodeReferenceTag = "nd";
     const std::string DAttributeTag = "tag";
 
-
+    //Stores information of <node> tag with attributes in <tag>
     struct SNode: public CStreetMap::SNode{
         const std::string DNodeIDAttr = "id";
         const std::string DNodeLatAttr = "lat";
         const std::string DNodeLonAttr = "lon";
         TNodeID DID;
         SLocation DLocation;
-        //Vector of attributes in node tag
+        //Vector of attributes in <tag>
         TAttributes DAttributes;
 
         SNode(const SXMLEntity &entity){
@@ -64,11 +65,11 @@ struct COpenStreetMap::SImplementation{
         }
         
     };
-
+    //Stores information of <way> tag with attributes in <tag> and id refs of <nd>
     struct SWay: public CStreetMap::SWay{
         const std::string DWayIDAttr = "id";
         TWayID DID;
-        //Vector of attributes in way tag
+        //Vector of attributes in <tag>
         TAttributes DAttributes;
         //Vector of reference id in <nd> tag
         std::vector<TNodeID> DNodeReferences;
@@ -125,7 +126,7 @@ struct COpenStreetMap::SImplementation{
         }
         
     };
-
+    //Data storage
     std::vector<std::shared_ptr<SNode>> DNodesByIndex;
     std::unordered_map<TNodeID,std::shared_ptr<SNode>> DNodesByID;
 
@@ -151,7 +152,7 @@ struct COpenStreetMap::SImplementation{
             if((TempEntity.DType == SXMLEntity::EType::EndElement)&&(TempEntity.DNameData == DNodeTag)){
                 break;
             }
-
+            //Get attributes in <tag>
             if((TempEntity.DType == SXMLEntity::EType::StartElement)&&(TempEntity.DNameData == DAttributeTag)){
                 auto Key =TempEntity.AttributeValue("k");
                 auto Value =TempEntity.AttributeValue("v");
@@ -177,7 +178,7 @@ struct COpenStreetMap::SImplementation{
                 auto NodeRef = std::stoull(TempEntity.AttributeValue("ref"));
                 NewWay->DNodeReferences.push_back(NodeRef);
             }
-
+            //Get attributes in <tag>
             if((TempEntity.DType == SXMLEntity::EType::StartElement)&&(TempEntity.DNameData == DAttributeTag)){
                 auto Key =TempEntity.AttributeValue("k");
                 auto Value =TempEntity.AttributeValue("v");
@@ -193,7 +194,7 @@ struct COpenStreetMap::SImplementation{
         if(!FindStartTag(src,DOSMTag)){
             return false;
         }
-        while(src->ReadEntity(TempEntity, true)){
+        while(src->ReadEntity(TempEntity, true)){//Parse each corresponding types
             if(TempEntity.DType == SXMLEntity::EType::StartElement && TempEntity.DNameData == DNodeTag){
                 ParseNode(src, TempEntity);
             }
@@ -217,14 +218,14 @@ struct COpenStreetMap::SImplementation{
     std::size_t WayCount() const noexcept{
         return DWaysByIndex.size();
     }
-
+    //Access node based on order
     std::shared_ptr<CStreetMap::SNode> NodeByIndex(std::size_t index) const noexcept{
         if(index < DNodesByIndex.size()){
             return DNodesByIndex[index];
         }
         return nullptr;
     }
-
+    //Search key id in hash map
     std::shared_ptr<CStreetMap::SNode> NodeByID(TNodeID id) const noexcept{
         auto Search = DNodesByID.find(id);
         if(Search != DNodesByID.end()){
@@ -232,17 +233,17 @@ struct COpenStreetMap::SImplementation{
         }
         return nullptr;
     }
-
+    //Access way based on order
     std::shared_ptr<CStreetMap::SWay> WayByIndex(std::size_t index) const noexcept{
-        if(index < DWaysByIndex.size()){
+        if(index < DWaysByIndex.size()){//check if successful
             return DWaysByIndex[index];
         }
         return nullptr;
     }
-
+    //Search key id in hash map 
     std::shared_ptr<CStreetMap::SWay> WayByID(TWayID id) const noexcept{
         auto Search = DWaysByID.find(id);
-        if(Search != DWaysByID.end()){
+        if(Search != DWaysByID.end()){//check if successful
             return Search->second;
         }
         return nullptr;
@@ -250,7 +251,8 @@ struct COpenStreetMap::SImplementation{
 
 };
 
-
+//Public functions can be call outside
+//Functions just gets information
 COpenStreetMap::COpenStreetMap(std::shared_ptr<CXMLReader> src){
     DImplementation = std::make_unique<SImplementation>(src);
 }
