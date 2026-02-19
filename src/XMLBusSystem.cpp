@@ -18,6 +18,7 @@ struct CXMLBusSystem::SImplementation{
     const std::string DRouteTag = "route";
     const std::string DRouteNameAttr = "name";
     const std::string DRouteStopTag = "routestop";
+    const std::string DRouteAttrStopRef = "stop"; 
 
     const std::string DPathsTag = "paths";
     const std::string DPathTag = "path";
@@ -220,7 +221,7 @@ struct CXMLBusSystem::SImplementation{
 
             // Each <routestop stop="X"/> adds a stop to the route
             if(TempEntity.DType == SXMLEntity::EType::StartElement && TempEntity.DNameData == DRouteStopTag) {
-                TStopID StopID = std::stoull(TempEntity.AttributeValue(DStopIDAttr));
+                TStopID StopID = std::stoull(TempEntity.AttributeValue(DRouteAttrStopRef));
                 NewRoute->DStopIDs.push_back(StopID);
             }
         }
