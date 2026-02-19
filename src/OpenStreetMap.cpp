@@ -75,8 +75,7 @@ struct COpenStreetMap::SImplementation{
 
         SWay(const SXMLEntity &entity){
             auto WayID = std::stoull(entity.AttributeValue(DWayIDAttr));
-            DID = WayID;
-            DAttributes = entity.DAttributes;    
+            DID = WayID;  
         }
 
         ~SWay(){
@@ -137,16 +136,6 @@ struct COpenStreetMap::SImplementation{
         SXMLEntity TempEntity;
         while(xmlsource->ReadEntity(TempEntity,true)){
             if((TempEntity.DType == SXMLEntity::EType::StartElement)&&(TempEntity.DNameData == starttag)){
-                return true;
-            }
-        }
-        return false;
-    }
-
-    bool FindEndTag(std::shared_ptr< CXMLReader > xmlsource, const std::string &starttag){
-        SXMLEntity TempEntity;
-        while(xmlsource->ReadEntity(TempEntity,true)){
-            if((TempEntity.DType == SXMLEntity::EType::EndElement)&&(TempEntity.DNameData == starttag)){
                 return true;
             }
         }
