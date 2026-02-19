@@ -194,4 +194,5 @@ clean:
 	rm -rf $(TESTOBJ_DIR)
 	rm -rf $(TESTBIN_DIR)
 	rm -rf $(TESTCOVER_DIR)
+	rm -rf run_*
 
