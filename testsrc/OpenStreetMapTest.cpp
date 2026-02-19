@@ -159,3 +159,35 @@ TEST(OpenStreetMapTest, ErrorTest){
     EXPECT_EQ(Way->HasAttribute(dummyAttribute), false);
     EXPECT_EQ(Way->GetAttribute(dummyAttribute), "");
 }
+
+TEST(OpenStreetMapTest, DestructionTest){
+    auto OSMSource = std::make_shared<CStringDataSource>(  "<osm version=\"0.6\" generator=\"osmconvert 0.8.5\">\n"
+                                                            "  <node id=\"1\" lat=\"38.5\" lon=\"-121.7\"/>\n"
+                                                            "  <node id=\"2\" lat=\"38.5\" lon=\"-121.8\"/>\n"
+                                                            "  <way id=\"1000\">\n"
+                                                            "    <nd ref=\"1\"/>\n"
+                                                            "    <nd ref=\"2\"/>\n"
+                                                            "  </way>\n"
+                                                            "  <way id=\"1234\">\n"
+                                                            "    <nd ref=\"3\"/>\n"
+                                                            "    <nd ref=\"4\"/>\n"
+                                                            "    <nd ref=\"5\"/>\n"
+                                                            "  </way>\n"
+                                                            "</osm>"
+                                                        );
+    auto OSMReader = std::make_shared< CXMLReader >(OSMSource);
+    {   
+        COpenStreetMap* OpenStreetMap = new COpenStreetMap(OSMReader);
+        auto Node = OpenStreetMap->NodeByIndex(0);
+        auto Node2 = OpenStreetMap->NodeByID(2);
+        auto Way = OpenStreetMap->WayByIndex(0);
+        auto Way2 = OpenStreetMap->WayByID(1234);
+        delete OpenStreetMap;
+
+        COpenStreetMap StackOpenStreetMap(OSMReader);
+        auto StackNode = StackOpenStreetMap.NodeByIndex(0);
+        auto StackNode2 = StackOpenStreetMap.NodeByID(2);
+        auto StackWay = StackOpenStreetMap.WayByIndex(0);
+        auto StackWay2 = StackOpenStreetMap.WayByID(1234);
+    }
+}
